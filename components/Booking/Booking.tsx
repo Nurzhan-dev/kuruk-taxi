@@ -30,7 +30,7 @@ function Booking() {
         p-1 rounded-md
         mt-4 ${!carAmount ? "bg-gray-200" : null} `}
           onClick={() => {
-            router.push("/Payment");
+            /*router.push("/Payment");*/
           }}
         >
           Book

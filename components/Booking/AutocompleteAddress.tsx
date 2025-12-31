@@ -1,162 +1,134 @@
+"use client";
 import { DestinationCordiContext } from "@/context/DestinationCordiContext";
 import { SourceCordiContext } from "@/context/SourceCordiContext";
-import { log } from "console";
 import React, { useContext, useEffect, useState } from "react";
 
-// const session_token = "5ccce4a4-ab0a-4a7c-943d-580e55542363";
-const session_token = "0909e5ab-6826-40d1-88c3-de402d40f630";
-const MAPBOX_RETRIVE_URL =
-  "https://api.mapbox.com/search/searchbox/v1/retrieve/";
 function AutocompleteAddress() {
-  const [source, setSource] = useState<any>();
-  const [sourceChange, setSourceChange] = useState<any>(false);
-  const [destinationChange, setDestinationChange] = useState<any>(false);
-
-  const { soruceCordinates, setSourceCordinates } =
-    useContext(SourceCordiContext);
-  const { destinationCordinates, setDestinationCordinates } = useContext(
-    DestinationCordiContext
-  );
-
+  const [source, setSource] = useState<any>("");
+  const [destination, setDestination] = useState<any>("");
   const [addressList, setAddressList] = useState<any>([]);
-  const [destination, setDistination] = useState<any>();
+  const [isSourceLoading, setIsSourceLoading] = useState(false);
+  const [isDestLoading, setIsDestLoading] = useState(false);
+
+  const { setSourceCordinates } = useContext(SourceCordiContext);
+  const { setDestinationCordinates } = useContext(DestinationCordiContext);
+
+  // 1. Координаты границ Курыка (Bounding Box)
+  // Формат: minLon, minLat, maxLon, maxLat
+  const KURYK_BBOX = "51.60,43.15,51.72,43.21";
+
+  const getAddressList = async (query: string) => {
+    if (!query || query.length < 2) return;
+
+    try {
+      // 2. Добавляем "Kuryk" в запрос и bbox в параметры
+      const res = await fetch(
+        `https://photon.komoot.io/api/?q=${query} Kuryk&limit=5&bbox=${KURYK_BBOX}`
+      );
+      const result = await res.json();
+      
+      // Дополнительная фильтрация: оставляем только те результаты, 
+      // где в названии города/села есть Курык или область Мангистауская
+      const filtered = result.features.filter((item: any) => {
+        const props = item.properties;
+        return (
+          props.city?.toLowerCase().includes("курык") || 
+          props.name?.toLowerCase().includes("курык") ||
+          props.state?.toLowerCase().includes("мангистау")
+        );
+      });
+
+      setAddressList(filtered);
+    } catch (error) {
+      console.error("Ошибка поиска:", error);
+    }
+  };
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      +getAddressList();
-    }, 1000);
-    return () => clearTimeout(delayDebounceFn);
-  }, [source, destination]);
+    const delay = setTimeout(() => {
+      if (isSourceLoading && source.length >= 2) getAddressList(source);
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [source]);
 
-  const getAddressList = async () => {
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      if (isDestLoading && destination.length >= 2) getAddressList(destination);
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [destination]);
+
+  const onAddressClick = (item: any, type: "source" | "dest") => {
+    const coords = {
+      lat: item.geometry.coordinates[1],
+      lng: item.geometry.coordinates[0],
+    };
+
+    // Очищаем название от лишних слов типа "Kazakhstan" для красоты в инпуте
+    const addressLabel = item.properties.name || item.properties.street || "Курык";
+
+    if (type === "source") {
+      setSource(addressLabel);
+      setSourceCordinates(coords);
+      setIsSourceLoading(false);
+    } else {
+      setDestination(addressLabel);
+      setDestinationCordinates(coords);
+      setIsDestLoading(false);
+    }
     setAddressList([]);
-    const query = sourceChange ? source : destination;
-    const res = await fetch("/api/search-address?q=" + query, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await res.json();
-    setAddressList(result);
-  };
-
-  const onSourceAddressClick = async (item: any) => {
-    setSource(item.full_address);
-    setAddressList([]);
-    setSourceChange(false);
-    const res = await fetch(
-      MAPBOX_RETRIVE_URL +
-        item.mapbox_id +
-        "?session_token=" +
-        session_token +
-        "&access_token=" +
-        process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    );
-    const result = await res.json();
-    console.log(result);
-
-    setSourceCordinates({
-      lng: result.features[0].geometry.coordinates[0],
-      lat: result.features[0].geometry.coordinates[1],
-    });
-    console.log(result);
-  };
-
-  const onDestinationAddressClick = async (item: any) => {
-    setDistination(item.full_address);
-    setAddressList([]);
-    setDestinationChange(false);
-    const res = await fetch(
-      MAPBOX_RETRIVE_URL +
-        item.mapbox_id +
-        "?session_token=" +
-        session_token +
-        "&access_token=" +
-        process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    );
-
-    const result = await res.json();
-
-    setDestinationCordinates({
-      lng: result.features[0].geometry.coordinates[0],
-      lat: result.features[0].geometry.coordinates[1],
-    });
-    console.log(result);
   };
 
   return (
-    <div className="">
+    <div className="flex flex-col gap-3">
+      {/* Поле ОТКУДА */}
       <div className="relative">
-        <label className="text-gray-400 text-[13px]">Where From?</label>
+        <label className="text-gray-400 text-[13px]">Откуда (Курык...)</label>
         <input
           type="text"
-          className="bg-white p-1 
-                border-[1px] w-full text-black
-                
-                rounded-md outline-none
-                focus:border-yellow-300 text-[14px]"
+          placeholder="Введите улицу..."
+          className="bg-white p-2 border-[1px] w-full text-black rounded-md outline-none focus:border-yellow-300 text-[14px]"
           value={source}
-          onChange={(e) => {
-            setSource(e.target.value);
-            setSourceChange(true);
-          }}
+          onChange={(e) => { setSource(e.target.value); setIsSourceLoading(true); setIsDestLoading(false); }}
         />
-
-        {addressList?.suggestions && sourceChange ? (
-          <div
-            className="shadow-md p-1 rounded-md
-            absolute w-full bg-white z-20"
-          >
-            {addressList?.suggestions.map((item: any, index: number) => (
-              <h2
-                key={index}
-                className="p-3 hover:bg-gray-100
-                cursor-pointer text-black"
-                onClick={() => {
-                  onSourceAddressClick(item);
-                }}
-              >
-                {item.full_address}
-              </h2>
+        {addressList.length > 0 && isSourceLoading && (
+          <ul className="absolute shadow-lg w-full bg-white z-50 rounded-b-md max-h-60 overflow-y-auto border border-t-0">
+            {addressList.map((item: any, index: number) => (
+              <li key={index} className="p-3 hover:bg-gray-100 cursor-pointer text-black border-b text-[13px] flex flex-col"
+                onClick={() => onAddressClick(item, "source")}>
+                <span className="font-bold">{item.properties.name}</span>
+                <span className="text-[11px] text-gray-500">
+                  {item.properties.street || ""} {item.properties.district || "Курык"}
+                </span>
+              </li>
             ))}
-          </div>
-        ) : null}
+          </ul>
+        )}
       </div>
+
+      {/* Поле КУДА */}
       <div className="relative">
-        <label className="text-gray-400 text-[13px]">Where To?</label>
+        <label className="text-gray-400 text-[13px]">Куда</label>
         <input
           type="text"
-          className="bg-white p-1 
-                border-[1px] w-full text-black
-                rounded-md outline-none
-                focus:border-yellow-300 text-[14px]"
+          placeholder="Куда едем?"
+          className="bg-white p-2 border-[1px] w-full text-black rounded-md outline-none focus:border-yellow-300 text-[14px]"
           value={destination}
-          onChange={(e) => {
-            setDistination(e.target.value);
-            setDestinationChange(true);
-          }}
+          onChange={(e) => { setDestination(e.target.value); setIsDestLoading(true); setIsSourceLoading(false); }}
         />
-
-        {addressList?.suggestions && destinationChange ? (
-          <div
-            className="shadow-md p-1 rounded-md
-            absolute w-full bg-white"
-          >
-            {addressList?.suggestions.map((item: any, index: number) => (
-              <h2
-                key={index}
-                className="p-3 hover:bg-gray-100
-                cursor-pointer text-black"
-                onClick={() => {
-                  onDestinationAddressClick(item);
-                }}
-              >
-                {item.full_address}
-              </h2>
+        {addressList.length > 0 && isDestLoading && (
+          <ul className="absolute shadow-lg w-full bg-white z-50 rounded-b-md max-h-60 overflow-y-auto border border-t-0">
+            {addressList.map((item: any, index: number) => (
+              <li key={index} className="p-3 hover:bg-gray-100 cursor-pointer text-black border-b text-[13px] flex flex-col"
+                onClick={() => onAddressClick(item, "dest")}>
+                <span className="font-bold">{item.properties.name}</span>
+                <span className="text-[11px] text-gray-500">
+                  {item.properties.street || ""} {item.properties.district || "Курык"}
+                </span>
+              </li>
             ))}
-          </div>
-        ) : null}
+          </ul>
+        )}
       </div>
     </div>
   );

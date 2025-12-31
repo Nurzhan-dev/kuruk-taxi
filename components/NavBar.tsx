@@ -1,44 +1,72 @@
 "use client";
 import Image from "next/image";
-import React from "react";
-import { UserButton } from "@clerk/nextjs";
-import { useUser } from "@clerk/clerk-react";
-import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { createClient, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+
 function NavBar() {
-  // const router: any = useRouter();
-  const { isSignedIn, user, isLoaded } = useUser();
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  // Проверяем текущего пользователя при загрузке
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+
+   const { data: authListener } = supabase.auth.onAuthStateChange(
+    (event: AuthChangeEvent, session: Session | null) => {
+      setUser(session?.user || null);
+    }
+  );
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/auth"); // Перенаправляем на страницу входа
+  };
+
   return (
-    isSignedIn && (
-      <div
-        className="flex justify-between
-     p-3 px-10 border-b-[1px] shadow-sm"
-      >
-        <div className="flex gap-10 items-center">
-          <Image src="/logo.png" alt="logo" width={120} height={60} />
-          <div className="hidden md:flex gap-6">
-            <h2
-              className="hover:bg-gray-100 p-2
-                rounded-md cursor-pointer transition-all "
-            >
-              Home
-            </h2>
-            <h2
-              className="hover:bg-gray-100 p-2
-                rounded-md cursor-pointer transition-all"
-            >
-              History
-            </h2>
-            <h2
-              className="hover:bg-gray-100 p-2
-                rounded-md cursor-pointer transition-all"
-            >
-              Help
-            </h2>
-          </div>
+    <div className="flex justify-between p-3 px-10 border-b-[1px] shadow-sm bg-white items-center">
+      <div className="flex gap-10 items-center">
+        <div className="font-extrabold text-2xl text-yellow-500 cursor-pointer" onClick={() => router.push("/")}>
+          KURUK DRIVE
         </div>
-        <UserButton afterSignOutUrl="/" />
+        
+        <div className="hidden md:flex gap-6">
+          <h2 className="hover:text-yellow-600 p-2 cursor-pointer transition-all font-medium">Home</h2>
+          <h2 className="hover:text-yellow-600 p-2 cursor-pointer transition-all font-medium">History</h2>
+          <h2 className="hover:text-yellow-600 p-2 cursor-pointer transition-all font-medium">Help</h2>
+        </div>
       </div>
-    )
+
+      <div className="flex items-center gap-4">
+        {user ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm hidden sm:block text-gray-600">{user.email}</span>
+            <button 
+              onClick={handleSignOut}
+              className="bg-gray-100 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+            >
+              Выйти
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => router.push("/auth")}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all"
+          >
+            Войти
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -1,53 +1,51 @@
-// "use client";
-import { DestinationCordiContext } from "@/context/DestinationCordiContext";
-import { SourceCordiContext } from "@/context/SourceCordiContext";
-import { UserLocationContext } from "@/context/UserLocationContext";
+"use client";
 import React, { useContext } from "react";
-import { Map, Marker } from "react-map-gl";
+import { Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Контексты
+import { UserLocationContext } from "@/context/UserLocationContext";
+import { SourceCordiContext } from "@/context/SourceCordiContext";
+import { DestinationCordiContext } from "@/context/DestinationCordiContext";
+
+// Создаем иконки для Leaflet на основе ваших картинок
+const userIcon = L.icon({
+  iconUrl: "./pin.png",
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+});
+
+const locationIcon = L.icon({
+  iconUrl: "./location.png",
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+});
 
 function Markers() {
-  const { userLocation, setUserLocation } = useContext(UserLocationContext);
-  const { soruceCordinates, setSourceCordinates } =
-    useContext(SourceCordiContext);
-  const { destinationCordinates, setDestinationCordinates } = useContext(
-    DestinationCordiContext
-  );
+  const { userLocation } = useContext(UserLocationContext);
+  const { soruceCordinates } = useContext(SourceCordiContext);
+  const { destinationCordinates } = useContext(DestinationCordiContext);
 
   return (
-    <div>
-      {/* User Marker */}
-      {userLocation?.lng && userLocation?.lat && (
-        <Marker
-          longitude={userLocation.lng}
-          latitude={userLocation.lat}
-          anchor="bottom"
-        >
-          <img src="./pin.png" className="w-10 h-10" />
+    <>
+      {/* Маркер пользователя */}
+      {userLocation?.lat && userLocation?.lng && (
+        <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+          <Popup>Вы здесь</Popup>
         </Marker>
       )}
 
-      {/* Source marker */}
-      {soruceCordinates.length !== 0 && (
-        <Marker
-          longitude={soruceCordinates?.lng}
-          latitude={soruceCordinates?.lat}
-          anchor="bottom"
-        >
-          <img src="./location.png" className="w-10 h-10" />
-        </Marker>
+      {/* Маркер А (Откуда) */}
+      {soruceCordinates?.lat && soruceCordinates?.lng && (
+        <Marker position={[soruceCordinates.lat, soruceCordinates.lng]} icon={locationIcon} />
       )}
 
-      {/* Destination Marker */}
-      {destinationCordinates.length !== 0 && (
-        <Marker
-          longitude={destinationCordinates?.lng}
-          latitude={destinationCordinates?.lat}
-          anchor="bottom"
-        >
-          <img src="./location.png" className="w-10 h-10" />
-        </Marker>
+      {/* Маркер Б (Куда) */}
+      {destinationCordinates?.lat && destinationCordinates?.lng && (
+        <Marker position={[destinationCordinates.lat, destinationCordinates.lng]} icon={locationIcon} />
       )}
-    </div>
+    </>
   );
 }
 
