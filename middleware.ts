@@ -53,16 +53,14 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
+ const { data: { session } } = await supabase.auth.getSession()
+ const isDriverPage = request.nextUrl.pathname.startsWith('/driver');
+ const isAuthPage = request.nextUrl.pathname.startsWith('/sign-in') || 
+                   request.nextUrl.pathname.startsWith('/sign-up');
 
-  const { data: { session } } = await supabase.auth.getSession()
-
-  console.log("Путь:", request.nextUrl.pathname);
-  console.log("Сессия активна?:", !!session);
-
-  /*if (!session && !request.nextUrl.pathname.startsWith('/sign-in') && !request.nextUrl.pathname.startsWith('/sign-up')) {
-    console.log("Редирект на sign-in...");
-    return NextResponse.redirect(new URL('/sign-in', request.url))
-  }*/
+if (!session && isDriverPage) {
+  return NextResponse.redirect(new URL('/sign-in', request.url));
+}
 
   return response
 }
