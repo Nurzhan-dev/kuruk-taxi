@@ -61,7 +61,9 @@ export async function middleware(request: NextRequest) {
 if (!session && isDriverPage) {
   return NextResponse.redirect(new URL('/sign-in', request.url));
 }
-
+if (session && isAuthPage) {
+  return NextResponse.redirect(new URL('/', request.url));
+}
   return response
 }
 
