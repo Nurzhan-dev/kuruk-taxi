@@ -13,7 +13,7 @@ export async function POST(request: any) {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Number(amount),
-      currency: "USD",
+      currency: "TEN",
     });
     return NextResponse.json(
       { client_secret: paymentIntent.client_secret },

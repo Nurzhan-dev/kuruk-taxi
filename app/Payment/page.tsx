@@ -15,8 +15,8 @@ function Payment() {
   const options: any = {
     mode: "payment",
     // amount: carAmount,
-    amount: 50,
-    currency: "usd",
+    amount: 500,
+    currency: "ten",
   };
 
   return (
