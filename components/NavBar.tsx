@@ -9,7 +9,6 @@ function NavBar() {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
-  // Проверяем текущего пользователя при загрузке
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -29,7 +28,7 @@ function NavBar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push("/auth"); // Перенаправляем на страницу входа
+    router.push("/sign-in"); // Перенаправляем на страницу входа
   };
 
   return (
@@ -59,7 +58,7 @@ function NavBar() {
           </div>
         ) : (
           <button 
-            onClick={() => router.push("/auth")}
+            onClick={() => router.push("/sign-in")}
             className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all"
           >
             Войти

@@ -1,20 +1,38 @@
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://api.mapbox.com/search/searchbox/v1/suggest";
+// Используем Nominatim API (OpenStreetMap)
+const BASE_URL = "https://nominatim.openstreetmap.org/search";
 
-export async function GET(request: any) {
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const searchText = searchParams.get("q");
 
-  const res = await fetch(
-    `${BASE_URL}?q=${searchText}&language=en&limit=8&session_token=5ccce4a4-ab0a-4a7c-943d-580e55542363&country=IN&access_token=${process.env.MAPBOX_ACCESS_TOKEN}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  if (!searchText) {
+    return NextResponse.json([]);
+  }
 
-  const searchResult = await res.json();
-  return NextResponse.json(searchResult);
+  try {
+    const res = await fetch(
+      `${BASE_URL}?q=${searchText}&format=json&addressdetails=1&limit=8&countrycodes=kz`, 
+      {
+        headers: {
+          "User-Agent": "KurykDrive/1.0", // Важно! OSM требует User-Agent
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    // Преобразуем формат OSM в удобный для нас вид
+    const suggestions = data.map((item: any) => ({
+      full_address: item.display_name,
+      lat: item.lat,
+      lon: item.lon,
+      name: item.name || item.display_name.split(',')[0]
+    }));
+
+    return NextResponse.json(suggestions);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to fetch address" }, { status: 500 });
+  }
 }

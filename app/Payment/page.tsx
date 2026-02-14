@@ -1,29 +1,16 @@
 "use client";
 
 import CheckoutForm from "@/components/payment/CheckoutForm";
-// import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import React from "react";
 
 function Payment() {
-  //   const { carAmount, setCarAmount } = useContext(selectedCarAmountContext);
-
-  const stripePromise = loadStripe(
-    process.env.NEXT_PUBLIC_STRIPE_PUBLICATION_KEY as any
-  );
-  const options: any = {
-    mode: "payment",
-    // amount: carAmount,
-    amount: 500,
-    currency: "ten",
-  };
-
+  // Нам больше не нужны Stripe Promise и Options. 
+  // Мы просто отображаем форму.
   return (
-    <div className="items-center  text-white">
-      <Elements stripe={stripePromise} options={options}>
+    <div className="flex justify-center items-center min-h-[200px]">
+      <div className="w-full max-w-md">
         <CheckoutForm />
-      </Elements>
+      </div>
     </div>
   );
 }
