@@ -1,40 +1,39 @@
-import React, { useContext, useState } from "react";
+"use client";
+import React, { useContext } from "react";
 import AutocompleteAddress from "./AutocompleteAddress";
 import Cars from "./Cars";
-import Cards from "./Cards";
-import DistanceTime from "./DistanceTime";
-import { useRouter } from "next/navigation";
+// import Cards from "./Cards"; <--- Убираем это
 import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
+import CheckoutForm from "../payment/CheckoutForm"; // Проверь правильность пути к файлу
 
 function Booking() {
-  const screenHight =
-    typeof window !== "undefined" ? window.innerHeight * 0.72 : 0;
-  const { carAmount, setCarAmount } = useContext(selectedCarAmountContext);
-
-  const router: any = useRouter();
+  const { carAmount } = useContext(selectedCarAmountContext);
 
   return (
-    <div className="p-5 ">
-      <h2 className="text-[20px] font-semibold">Booking</h2>
-      <div
-        className="border-[1px] p-5 
-        rounded-md"
-      >
+    <div className="p-5">
+      <h2 className="text-[20px] font-semibold">Заказ такси</h2>
+      <div className="border-[1px] p-5 rounded-md bg-white shadow-sm">
+        
+        {/* Поиск адресов (уже работает) */}
         <AutocompleteAddress />
 
+        {/* Выбор машины (уже работает) */}
         <Cars />
-        <Cards />
-        <button
-          className={`w-full
-         bg-yellow-400
-        p-1 rounded-md
-        mt-4 ${!carAmount ? "bg-gray-200" : null} `}
-          onClick={() => {
-            /*router.push("/Payment");*/
-          }}
-        >
-          Book
-        </button>
+
+        {/* Разделительная линия для красоты */}
+        <hr className="my-5 border-gray-100" />
+
+        {/* Наша новая форма оплаты и кнопка вызова.
+           Она появится только если выбрана машина (есть цена).
+        */}
+        {carAmount ? (
+          <CheckoutForm />
+        ) : (
+          <p className="text-center text-gray-400 text-sm mt-4">
+            Выберите тип автомобиля, чтобы продолжить
+          </p>
+        )}
+
       </div>
     </div>
   );

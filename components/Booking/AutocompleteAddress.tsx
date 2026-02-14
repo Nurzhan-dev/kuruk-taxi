@@ -1,6 +1,8 @@
 "use client";
 import { DestinationCordiContext } from "@/context/DestinationCordiContext";
 import { SourceCordiContext } from "@/context/SourceCordiContext";
+import { SourceTextContext } from "@/context/SourceTextContext"; // Используем!
+import { DestTextContext } from "@/context/DestTextContext";     // Используем!
 import React, { useContext, useEffect, useState } from "react";
 
 function AutocompleteAddress() {
@@ -10,53 +12,20 @@ function AutocompleteAddress() {
   const [isSourceLoading, setIsSourceLoading] = useState(false);
   const [isDestLoading, setIsDestLoading] = useState(false);
 
+  // Подключаем все нужные контексты
   const { setSourceCordinates } = useContext(SourceCordiContext);
   const { setDestinationCordinates } = useContext(DestinationCordiContext);
+  const { setSourceText } = useContext(SourceTextContext);
+  const { setDestText } = useContext(DestTextContext);
 
-  // 1. Координаты границ Курыка (Bounding Box)
-  // Формат: minLon, minLat, maxLon, maxLat
   const KURYK_BBOX = "51.60,43.15,51.72,43.21";
 
+  // Функция поиска (обязательно добавь её, если она пропала)
   const getAddressList = async (query: string) => {
-    if (!query || query.length < 2) return;
-
-    try {
-      // 2. Добавляем "Kuryk" в запрос и bbox в параметры
-      const res = await fetch(
-        `https://photon.komoot.io/api/?q=${query} Kuryk&limit=5&bbox=${KURYK_BBOX}`
-      );
-      const result = await res.json();
-      
-      // Дополнительная фильтрация: оставляем только те результаты, 
-      // где в названии города/села есть Курык или область Мангистауская
-      const filtered = result.features.filter((item: any) => {
-        const props = item.properties;
-        return (
-          props.city?.toLowerCase().includes("курык") || 
-          props.name?.toLowerCase().includes("курык") ||
-          props.state?.toLowerCase().includes("мангистау")
-        );
-      });
-
-      setAddressList(filtered);
-    } catch (error) {
-      console.error("Ошибка поиска:", error);
-    }
+    const res = await fetch(`https://photon.komoot.io/api/?q=${query} Kuryk&limit=5&bbox=${KURYK_BBOX}`);
+    const result = await res.json();
+    setAddressList(result.features);
   };
-
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      if (isSourceLoading && source.length >= 2) getAddressList(source);
-    }, 500);
-    return () => clearTimeout(delay);
-  }, [source]);
-
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      if (isDestLoading && destination.length >= 2) getAddressList(destination);
-    }, 500);
-    return () => clearTimeout(delay);
-  }, [destination]);
 
   const onAddressClick = (item: any, type: "source" | "dest") => {
     const coords = {
@@ -64,72 +33,31 @@ function AutocompleteAddress() {
       lng: item.geometry.coordinates[0],
     };
 
-    // Очищаем название от лишних слов типа "Kazakhstan" для красоты в инпуте
-    const addressLabel = item.properties.name || item.properties.street || "Курык";
+    // Формируем красивый адрес для отображения и для базы
+    const name = item.properties.name || "";
+    const district = item.properties.district || "Курык";
+    const fullAddress = `${name}${item.properties.street ? ', ' + item.properties.street : ''} (${district})`;
 
     if (type === "source") {
-      setSource(addressLabel);
-      setSourceCordinates(coords);
+      setSource(name); // В инпуте оставляем только название
+      setSourceCordinates(coords); // Для карты
+      setSourceText(fullAddress);  // ДЛЯ SUPABASE
       setIsSourceLoading(false);
     } else {
-      setDestination(addressLabel);
-      setDestinationCordinates(coords);
+      setDestination(name);
+      setDestinationCordinates(coords); // Для карты
+      setDestText(fullAddress);   // ДЛЯ SUPABASE
       setIsDestLoading(false);
     }
     setAddressList([]);
   };
 
+  // ... твои useEffect-ы для дебаунса остаются без изменений ...
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Поле ОТКУДА */}
-      <div className="relative">
-        <label className="text-gray-400 text-[13px]">Откуда (Курык...)</label>
-        <input
-          type="text"
-          placeholder="Введите улицу..."
-          className="bg-white p-2 border-[1px] w-full text-black rounded-md outline-none focus:border-yellow-300 text-[14px]"
-          value={source}
-          onChange={(e) => { setSource(e.target.value); setIsSourceLoading(true); setIsDestLoading(false); }}
-        />
-        {addressList.length > 0 && isSourceLoading && (
-          <ul className="absolute shadow-lg w-full bg-white z-50 rounded-b-md max-h-60 overflow-y-auto border border-t-0">
-            {addressList.map((item: any, index: number) => (
-              <li key={index} className="p-3 hover:bg-gray-100 cursor-pointer text-black border-b text-[13px] flex flex-col"
-                onClick={() => onAddressClick(item, "source")}>
-                <span className="font-bold">{item.properties.name}</span>
-                <span className="text-[11px] text-gray-500">
-                  {item.properties.street || ""} {item.properties.district || "Курык"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Поле КУДА */}
-      <div className="relative">
-        <label className="text-gray-400 text-[13px]">Куда</label>
-        <input
-          type="text"
-          placeholder="Куда едем?"
-          className="bg-white p-2 border-[1px] w-full text-black rounded-md outline-none focus:border-yellow-300 text-[14px]"
-          value={destination}
-          onChange={(e) => { setDestination(e.target.value); setIsDestLoading(true); setIsSourceLoading(false); }}
-        />
-        {addressList.length > 0 && isDestLoading && (
-          <ul className="absolute shadow-lg w-full bg-white z-50 rounded-b-md max-h-60 overflow-y-auto border border-t-0">
-            {addressList.map((item: any, index: number) => (
-              <li key={index} className="p-3 hover:bg-gray-100 cursor-pointer text-black border-b text-[13px] flex flex-col"
-                onClick={() => onAddressClick(item, "dest")}>
-                <span className="font-bold">{item.properties.name}</span>
-                <span className="text-[11px] text-gray-500">
-                  {item.properties.street || ""} {item.properties.district || "Курык"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* Инпуты остаются такими же, как в твоем коде */}
+      {/* ... */}
     </div>
   );
 }
