@@ -92,20 +92,33 @@ function LeafletMap() {
       <div className="rounded-lg overflow-hidden h-[450px] w-full border shadow-md">
         {userLocation && (
           <MapContainer
-            center={[43.175, 51.650]} // Центр Курыка
-            zoom={14}
-            minZoom={13} // Не даем слишком сильно отдалять
-            maxBounds={kurykBounds} // Указываем границы
-            maxBoundsViscosity={1.0} // Насколько жестко "отбрасывать" назад при выходе за границы
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            />
-            {/* Остальной ваш код с маркерами и RoutingAndFly */}
-          </MapContainer>
+  center={[43.175, 51.650]}
+  zoom={14}
+  style={{ height: "100%", width: "100%" }}
+>
+  <TileLayer
+    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  />
+
+      {/* 1. Добавляем логику полета и маршрута */}
+      <RoutingAndFly 
+      source={soruceCordinates} 
+      destination={destinationCordinates} 
+      setDirectionData={setDirectionData} 
+     />
+
+        {/* 2. Рисуем маркер "ОТКУДА" */}
+        {soruceCordinates && (
+        <Marker position={[soruceCordinates.lat, soruceCordinates.lng]} icon={icon} />
+        )}
+
+         {/* 3. Рисуем маркер "КУДА" */}
+         {destinationCordinates && (
+         <Marker position={[destinationCordinates.lat, destinationCordinates.lng]} icon={icon} />
+         )}
+
+         <ResizeMap />
+        </MapContainer>
         )}
       </div>
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import Booking from "@/components/Booking/Booking";
+import { SourceTextContext } from "@/context/SourceTextContext";
+import { DestTextContext } from "@/context/DestTextContext";
 import { DestinationCordiContext } from "@/context/DestinationCordiContext";
 import { DirectionDataContext } from "@/context/DirectionDataContext";
 import { SourceCordiContext } from "@/context/SourceCordiContext";
@@ -25,6 +27,8 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<any>({ lat: 43.175, lng: 51.650 });
   const [soruceCordinates, setSourceCordinates] = useState<any>(null);
   const [destinationCordinates, setDestinationCordinates] = useState<any>(null);
+  const [sourceText, setSourceText] = useState<string>("");
+  const [destText, setDestText] = useState<string>("");
   const [directionData, setDirectionData] = useState<any>([]);
   const [carAmount, setCarAmount] = useState<any>();
 
@@ -53,8 +57,10 @@ export default function Home() {
       <UserLocationContext.Provider value={{ userLocation, setUserLocation }}>
         <SourceCordiContext.Provider value={{ soruceCordinates, setSourceCordinates }}>
           <DestinationCordiContext.Provider value={{ destinationCordinates, setDestinationCordinates }}>
-            <DirectionDataContext.Provider value={{ directionData, setDirectionData }}>
-              <selectedCarAmountContext.Provider value={{ carAmount, setCarAmount }}>
+            <SourceTextContext.Provider value={{ sourceText, setSourceText }}>
+              <DestTextContext.Provider value={{ destText, setDestText }}>
+                <DirectionDataContext.Provider value={{ directionData, setDirectionData }}>
+                  <selectedCarAmountContext.Provider value={{ carAmount, setCarAmount }}>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3">
                   <div className="p-4 overflow-y-auto h-screen">
@@ -66,8 +72,10 @@ export default function Home() {
                   </div>
                 </div>
 
-              </selectedCarAmountContext.Provider>
-            </DirectionDataContext.Provider>
+               </selectedCarAmountContext.Provider>
+              </DirectionDataContext.Provider>
+             </DestTextContext.Provider>
+            </SourceTextContext.Provider>
           </DestinationCordiContext.Provider>
         </SourceCordiContext.Provider>
       </UserLocationContext.Provider>
