@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useContext } from "react";
 import { supabase } from "@/lib/supabaseClient";
-// Импортируем контексты, которые мы создали и прописали в page.tsx
 import { SourceTextContext } from "@/context/SourceTextContext";
 import { DestTextContext } from "@/context/DestTextContext";
 import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
@@ -36,7 +35,7 @@ function CheckoutForm() {
     const orderData = {
       from_address: sourceText, 
       to_address: destText,
-      price: carAmount || 0,
+      price: (carAmount && carAmount !== "N/A") ? carAmount:300,
       payment_method: paymentMethod,
       status: "pending",
       passenger_phone: phone 

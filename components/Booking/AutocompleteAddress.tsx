@@ -56,8 +56,24 @@ function AutocompleteAddress() {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Инпуты остаются такими же, как в твоем коде */}
-      {/* ... */}
+      {<input
+  type="text"
+  placeholder="Откуда..."
+  value={source}
+  onChange={(e) => { 
+    setSource(e.target.value); 
+    setSourceText(e.target.value); // Текст сразу летит в контекст для базы
+    }}
+  />}
+      {<input
+  type="text"
+  placeholder="Куда..."
+  value={destination}
+  onChange={(e) => { 
+    setDestination(e.target.value); 
+    setDestText(e.target.value); // Текст сразу летит в контекст для базы
+    }}
+   />}
     </div>
   );
 }

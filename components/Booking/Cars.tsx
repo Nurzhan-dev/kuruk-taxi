@@ -15,22 +15,18 @@ function Cars() {
   //     0.000621371192
   //   ).toFixed(2);
   // };
-  const getCost = (charges: any) => {
-    // Check if directionData.routes is defined and is an array
-    if (
-      directionData.routes &&
-      Array.isArray(directionData.routes) &&
-      directionData.routes.length > 0
-    ) {
+    const getCost = (charges: any) => {
+    // Если есть данные с карты, считаем по формуле
+    if (directionData?.routes?.[0]?.distance) {
       return (
         charges *
         directionData.routes[0].distance *
         0.000621371192
-      ).toFixed(2);
+      ).toFixed(0); // Округляем до целого числа тенге
     }
 
-    // Handle the case where directionData.routes is not as expected
-    return "N/A"; // You can return a default value or handle it according to your requirements
+    // ЕСЛИ КАРТЫ НЕТ: просто возвращаем charges как фиксированную цену
+    return charges; 
   };
   return (
     <div className="mt-3">
