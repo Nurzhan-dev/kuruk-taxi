@@ -116,7 +116,7 @@ function CheckoutForm() {
             loading ? "bg-gray-300" : "bg-yellow-400 hover:bg-yellow-500 shadow-lg shadow-yellow-200 text-black"
           }`}
         >
-          {loading ? "Отправка..." : "Вызвать такси"}
+          {loading ? "Отправка..." : "Вызвать транспорт"}
         </button>
       </form>
     </div>

@@ -52,13 +52,16 @@ export default function DriverDashboard() {
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-black uppercase italic mb-6">Заказы Курык</h1>
+      <h1 className="text-2xl font-black uppercase italic mb-6">Заказы Kuruk Go</h1>
       
       {loading ? <p>Загрузка...</p> : (
         <div className="grid gap-4">
           {orders.map((order) => (
             <div key={order.id} className="bg-white p-5 rounded-2xl shadow-md border-l-8 border-yellow-400">
               <div className="flex justify-between items-start mb-2">
+                <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+                {order.car_type || 'Легковой'}
+                </span>
                 <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded">НОВЫЙ</span>
                 <span className="font-bold text-lg text-green-600">{order.price} ₸</span>
               </div>
