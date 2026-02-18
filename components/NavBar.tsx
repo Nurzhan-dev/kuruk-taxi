@@ -46,7 +46,8 @@ function NavBar() {
           className="font-extrabold text-2xl text-yellow-500 cursor-pointer uppercase italic" 
           onClick={() => router.push("/")}
         >
-          KURUK DRIVE
+         <span className="text-black">KURYK</span>
+         <span className="text-yellow-500 ml-1 italic">GO</span>
         </div>
         
         <div className="hidden md:flex gap-6 items-center">

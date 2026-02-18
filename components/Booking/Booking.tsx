@@ -11,7 +11,7 @@ function Booking() {
 
   return (
     <div className="p-5">
-      <h2 className="text-[20px] font-semibold">Заказ такси</h2>
+      <h2 className="text-[20px] font-semibold">Ваш универсальный агрегатор перевозок</h2>
       <div className="border-[1px] p-5 rounded-md bg-white shadow-sm">
         
         {/* Поиск адресов (уже работает) */}

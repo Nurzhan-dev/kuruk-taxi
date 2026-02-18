@@ -35,7 +35,7 @@ export default function Home() {
                 <div className="flex justify-center p-4 md:p-10">
                   <div className="w-full max-w-xl bg-white shadow-2xl rounded-3xl overflow-hidden">
                     <div className="p-4">
-                       <h1 className="text-2xl font-black text-center mb-6 uppercase italic">Заказать такси Курык</h1>
+                       <h1 className="text-2xl font-black text-center mb-6 uppercase italic">Заказать транспорт</h1>
                        <Booking />
                     </div>
                   </div>

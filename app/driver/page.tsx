@@ -31,16 +31,24 @@ export default function DriverDashboard() {
   };
 
   const acceptOrder = async (orderId: string) => {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "accepted" })
-      .eq("id", orderId);
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!error) {
-      setOrders(orders.filter(order => order.id !== orderId));
-      alert("Заказ принят! Позвоните клиенту.");
-    }
-  };
+  const { error } = await supabase
+    .from("orders")
+    .update({ 
+      status: "accepted",
+      driver_id: user?.id
+    })
+    .eq("id", orderId);
+
+  if (error) {
+    console.error(error);
+    alert("Ошибка: " + error.message);
+  } else {
+    setOrders(orders.filter(order => order.id !== orderId));
+    alert("Заказ принят! Позвоните клиенту");
+  }
+};
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">

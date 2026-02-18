@@ -5,8 +5,8 @@ import NavBar from "@/components/NavBar";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Kuruk Drive",
-  description: "Taxi Booking App",
+  title: "Kuryk Go — Перевозки твоего поселка",
+  description: "Единый агрегатор такси, грузоперевозок и спецтехники в Курыке",
 };
 
 export default function RootLayout({
