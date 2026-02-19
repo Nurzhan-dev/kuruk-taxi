@@ -3,11 +3,11 @@ import React, { useContext } from "react";
 import AutocompleteAddress from "./AutocompleteAddress";
 import Cars from "./Cars";
 // import Cards from "./Cards"; <--- Убираем это
-import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
+import { SelectedCarContext } from "@/context/SelectedCarContext";
 import CheckoutForm from "../payment/CheckoutForm"; // Проверь правильность пути к файлу
 
 function Booking() {
-  const { carAmount } = useContext(selectedCarAmountContext);
+  const { carAmount } = useContext(SelectedCarContext);
 
   return (
     <div className="p-5">

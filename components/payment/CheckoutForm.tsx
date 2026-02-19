@@ -3,7 +3,7 @@ import React, { useState, useContext } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { SourceTextContext } from "@/context/SourceTextContext";
 import { DestTextContext } from "@/context/DestTextContext";
-import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
+import { SelectedCarContext } from "@/context/SelectedCarContext";
 
 type PaymentMethod = "cash" | "kaspi" | "halyk";
 
@@ -11,12 +11,10 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [phone, setPhone] = useState("");
-
-  // Достаем живые данные из контекста
   const { sourceText } = useContext(SourceTextContext);
   const { destText } = useContext(DestTextContext);
-  const { carAmount } = useContext(selectedCarAmountContext);
-
+  const { carAmount } = useContext(SelectedCarContext);
+  const { selectedCar } = useContext(SelectedCarContext);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -36,6 +34,7 @@ function CheckoutForm() {
       from_address: sourceText, 
       to_address: destText,
       price: (carAmount && carAmount !== "N/A") ? carAmount:300,
+      car_type: selectedCar?.name,
       payment_method: paymentMethod,
       status: "pending",
       passenger_phone: phone 

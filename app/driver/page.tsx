@@ -60,7 +60,7 @@ export default function DriverDashboard() {
             <div key={order.id} className="bg-white p-5 rounded-2xl shadow-md border-l-8 border-yellow-400">
               <div className="flex justify-between items-start mb-2">
                 <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
-                {order.car_type || 'Легковой'}
+                {order.car_type}
                 </span>
                 <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded">НОВЫЙ</span>
                 <span className="font-bold text-lg text-green-600">{order.price} ₸</span>

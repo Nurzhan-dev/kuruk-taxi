@@ -7,7 +7,7 @@ import { DestinationCordiContext } from "@/context/DestinationCordiContext";
 import { DirectionDataContext } from "@/context/DirectionDataContext";
 import { SourceCordiContext } from "@/context/SourceCordiContext";
 import { UserLocationContext } from "@/context/UserLocationContext";
-import { selectedCarAmountContext } from "@/context/SelectedCarAmount";
+import { SelectedCarContext } from "@/context/SelectedCarContext";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 
@@ -29,7 +29,7 @@ export default function Home() {
             <SourceTextContext.Provider value={{ sourceText, setSourceText }}>
               <DestTextContext.Provider value={{ destText, setDestText }}>
                 <DirectionDataContext.Provider value={{ directionData, setDirectionData }}>
-                  <selectedCarAmountContext.Provider value={{ carAmount, setCarAmount }}>
+                  <SelectedCarContext.Provider value={{ carAmount, setCarAmount }}>
                 
                 {/* Измененная сетка: теперь только одна колонка по центру */}
                 <div className="flex justify-center p-4 md:p-10">
@@ -41,7 +41,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                  </selectedCarAmountContext.Provider>
+                  </SelectedCarContext.Provider>
                 </DirectionDataContext.Provider>
               </DestTextContext.Provider>
             </SourceTextContext.Provider>
