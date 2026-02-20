@@ -58,6 +58,31 @@ export default function DriverDashboard() {
 
     if (!error) setHistory(data);
   };
+  
+  const cancelOrder = async (orderId: string) => {
+  const confirmCancel = confirm("Вы уверены, что хотите отменить заказ? Он снова станет доступен другим водителям.");
+  
+  if (confirmCancel) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ 
+        status: "pending", // Возвращаем в поиск
+        driver_id: null    // Очищаем водителя
+      })
+      .eq("id", orderId);
+
+    if (!error) {
+      const cancelledOrder = history.find(item => item.id === orderId);
+      setHistory(prev => prev.filter(item => item.id !== orderId));
+      if (cancelledOrder) {
+        setOrders(prev => [
+          { ...cancelledOrder, status: "pending", driver_id: null }, 
+          ...prev
+        ]);
+      }
+    }
+  }
+ };
 
   const acceptOrder = async (orderId: string, phone: string) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -85,7 +110,7 @@ export default function DriverDashboard() {
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen pb-20">
-      <h1 className="text-2xl font-black uppercase italic mb-6 text-center">Заказы Kuruk Go</h1>
+      <h1 className="text-2xl font-black uppercase italic mb-6 text-center">Заказы</h1>
       
       {/* СПИСОК НОВЫХ ЗАКАЗОВ */}
       {loading ? (
@@ -133,7 +158,7 @@ export default function DriverDashboard() {
 
       {/* ПРИВАТНАЯ ИСТОРИЯ */}
       <div className="max-w-lg mx-auto">
-        <h2 className="text-xs font-bold text-gray-400 uppercase mb-4 ml-2">Мои принятые заказы (Приватно)</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase mb-4 ml-2">Мои принятые заказы</h2>
         <div className="grid gap-2">
           {history.map((item) => (
             <div key={item.id} className="bg-white/60 p-4 rounded-2xl border border-white flex justify-between items-center shadow-sm">
@@ -146,6 +171,12 @@ export default function DriverDashboard() {
               <div className="text-right">
                 <p className="font-bold text-green-600">{item.price} ₸</p>
                 <p className="text-[9px] text-gray-400 font-bold uppercase">{item.payment_method}</p>
+              <button 
+                onClick={() => cancelOrder(item.id)}
+                className="text-[10px] font-bold text-red-500 mt-1 hover:underline uppercase"
+              >
+                Отменить заказ
+              </button>
               </div>
             </div>
           ))}
