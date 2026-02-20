@@ -7,22 +7,19 @@ import { useRouter } from "next/navigation";
 
 function NavBar() {
   const [user, setUser] = useState<any>(null);
+  const [isNavigating, setIsNavigating] = useState(false); // Для мгновенного отклика
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Получаем текущего пользователя при загрузке
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
     };
     getUser();
 
-    // 2. Слушаем изменения авторизации
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user || null);
-        
-        // Если вошли — можно сразу перекинуть в кабинет
         if (event === 'SIGNED_IN') {
           router.push("/driver");
         }
@@ -34,54 +31,62 @@ function NavBar() {
     };
   }, [router]);
 
+  // УСКОРЕНИЕ: Предварительная загрузка страницы кабинета
+  useEffect(() => {
+    if (user) {
+      router.prefetch('/driver');
+    }
+  }, [user, router]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/sign-in");
   };
 
+  const goToDriver = () => {
+    setIsNavigating(true); // Показываем "Загрузка...", чтобы пользователь видел реакцию на клик
+    router.push("/driver");
+  };
+
   return (
-    <div className="flex justify-between p-3 px-10 border-b-[1px] shadow-sm bg-white items-center">
-      <div className="flex gap-10 items-center">
+    <div className="flex justify-between p-3 px-4 md:px-10 border-b-[1px] shadow-sm bg-white items-center">
+      <div className="flex gap-4 md:gap-10 items-center">
         <div 
-          className="font-extrabold text-2xl text-yellow-500 cursor-pointer uppercase italic" 
+          className="font-extrabold text-xl md:text-2xl text-yellow-500 cursor-pointer uppercase italic" 
           onClick={() => router.push("/")}
         >
-         <span className="text-black">KURYK</span>
-         <span className="text-yellow-500 ml-1 italic">GO</span>
+          <span className="text-black">KURYK</span>
+          <span className="text-yellow-500 ml-1">GO</span>
         </div>
         
-        <div className="hidden md:flex gap-6 items-center">
-          <h2 className="hover:text-yellow-600 p-2 cursor-pointer transition-all font-medium" onClick={() => router.push("/")}>Главная</h2>
-          
-          {/* КНОПКА ВОДИТЕЛЯ: появляется только если user вошел */}
-          {user && (
-            <h2 
-              className="text-white bg-black hover:bg-gray-800 px-4 py-2 rounded-xl cursor-pointer transition-all font-bold text-sm shadow-md" 
-              onClick={() => router.push("/driver")}
-            >
-              Кабинет Водителя
-            </h2>
-          )}
-          
-          <h2 className="hover:text-yellow-600 p-2 cursor-pointer transition-all font-medium">Помощь</h2>
-        </div>
+        {/* КНОПКА ВОДИТЕЛЯ: Теперь видна и на мобильных (убрали hidden) */}
+        {user && (
+          <button 
+            disabled={isNavigating}
+            className="text-white bg-black hover:bg-gray-800 px-3 py-2 md:px-4 md:py-2 rounded-xl cursor-pointer transition-all font-bold text-[10px] md:text-sm shadow-md active:scale-95" 
+            onClick={goToDriver}
+          >
+            {isNavigating ? "Ждите..." : "Кабинет Водителя"}
+          </button>
+        )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="text-sm hidden lg:block text-gray-500 font-medium">{user.email}</span>
+            {/* Скрываем email на совсем маленьких экранах для экономии места */}
+            <span className="text-xs hidden sm:block text-gray-500 font-medium">{user.email?.split('@')[0]}</span>
             <button 
               onClick={handleSignOut}
-              className="bg-gray-100 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              className="bg-gray-100 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
             >
-              Выйти
+              Выход
             </button>
           </div>
         ) : (
           <button 
             onClick={() => router.push("/sign-in")}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg shadow-yellow-100 transition-all"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all"
           >
             Войти
           </button>

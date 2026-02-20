@@ -13,7 +13,6 @@ function CheckoutForm() {
   const [phone, setPhone] = useState("");
   const { sourceText } = useContext(SourceTextContext);
   const { destText } = useContext(DestTextContext);
-  const { carAmount } = useContext(SelectedCarContext);
   const { selectedCar } = useContext(SelectedCarContext);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -31,13 +30,13 @@ function CheckoutForm() {
     setLoading(true);
 
     const orderData = {
-      from_address: sourceText, 
-      to_address: destText,
-      price: (carAmount && carAmount !== "N/A") ? carAmount:300,
-      car_type: selectedCar?.name,
-      payment_method: paymentMethod,
-      status: "pending",
-      passenger_phone: phone 
+    from_address: sourceText, 
+    to_address: destText,
+    price: selectedCar?.amount,
+    car_type: selectedCar?.name,
+    payment_method: paymentMethod,
+    status: "pending",
+    passenger_phone: phone 
     };
 
     try {
@@ -66,7 +65,8 @@ function CheckoutForm() {
             placeholder="+7 707 000 0000"
             className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-black outline-none focus:border-yellow-400"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+            maxLength={11}
             required
           />
         </div>

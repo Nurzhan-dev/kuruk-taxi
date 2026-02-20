@@ -10,6 +10,7 @@ import { UserLocationContext } from "@/context/UserLocationContext";
 import { SelectedCarContext } from "@/context/SelectedCarContext";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Home() {
   const [userLocation, setUserLocation] = useState<any>({ lat: 43.175, lng: 51.650 });
@@ -18,9 +19,23 @@ export default function Home() {
   const [sourceText, setSourceText] = useState<string>("");
   const [destText, setDestText] = useState<string>("");
   const [directionData, setDirectionData] = useState<any>([]);
-  const [carAmount, setCarAmount] = useState<any>();
+  const [selectedCar, setSelectedCar] = useState<any>();
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
 
+  useEffect(() => {
+  const getUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
+  getUser();
+  }, []);
+
+  useEffect(() => {
+  if (user?.publicMetadata?.role === 'driver') {
+    router.push('/driver');
+  }
+  }, [user]);
   return (
     <div className="bg-gray-50 min-h-screen">
       <UserLocationContext.Provider value={{ userLocation, setUserLocation }}>
@@ -29,9 +44,6 @@ export default function Home() {
             <SourceTextContext.Provider value={{ sourceText, setSourceText }}>
               <DestTextContext.Provider value={{ destText, setDestText }}>
                 <DirectionDataContext.Provider value={{ directionData, setDirectionData }}>
-                  <SelectedCarContext.Provider value={{ carAmount, setCarAmount }}>
-                
-                {/* Измененная сетка: теперь только одна колонка по центру */}
                 <div className="flex justify-center p-4 md:p-10">
                   <div className="w-full max-w-xl bg-white shadow-2xl rounded-3xl overflow-hidden">
                     <div className="p-4">
@@ -40,8 +52,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                  </SelectedCarContext.Provider>
                 </DirectionDataContext.Provider>
               </DestTextContext.Provider>
             </SourceTextContext.Provider>
